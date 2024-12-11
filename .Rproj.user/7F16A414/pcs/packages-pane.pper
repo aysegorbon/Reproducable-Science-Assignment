@@ -1,0 +1,7 @@
+{
+    "installOptions": {
+        "installFromRepository": true,
+        "libraryPath": "/Users/ayse/Documents/Lydia France Assignment/renv/library/R-4.3/x86_64-apple-darwin20",
+        "installDependencies": true
+    }
+}

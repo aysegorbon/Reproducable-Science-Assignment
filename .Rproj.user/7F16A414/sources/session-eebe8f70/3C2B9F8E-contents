@@ -1,0 +1,326 @@
+---
+title: "Reproducable Research and Figures Assignment"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-12-11"
+---
+
+# Reproducible Research and Figures Assignment
+
+## Preparatory Steps
+
+Loading libraries
+
+```{r, echo=FALSE}
+library(tidyverse)
+library(palmerpenguins)
+library(here)
+library(janitor)
+library(ggplot2)
+library(ragg)
+library(svglite)
+library(tinytex)
+```
+
+Loading the data:
+
+```{r, echo=FALSE}
+head(penguins_raw)
+colnames(penguins_raw)
+write.csv(penguins_raw, here("data", "penguins_raw.csv"))
+```
+
+Cleaning the data:
+
+```{r, echo=FALSE}
+penguins_clean <- penguins_raw %>%
+select(-Comments) %>%
+select(-starts_with("Delta")) %>%
+clean_names() %>%
+mutate(species = gsub(" .*", "", species))  # Shorten species names
+
+colnames(penguins_clean)
+```
+
+Saving the clean data:
+
+```{r, echo=FALSE}
+write_csv(penguins_clean, here("data", "penguins_clean.csv"))
+```
+
+## QUESTION 01: Data Visualisation for Science Communication
+
+### a) Figure that is correct but badly communicates the data:
+
+```{r bad figure code, echo=FALSE}
+# Subsetting the columns body mass and flipper length, removing NAs
+penguins_data_for_plotting <- penguins_clean %>%
+  select(body_mass_g, flipper_length_mm, species) %>%
+  na.omit(body_mass_g, flipper_length_mm)
+
+# Poor visualization of data using a scatterplot of body mass (g) and flipper length (mm):
+penguins_bodymass_flippers <-ggplot(penguins_data_for_plotting, aes(x = body_mass_g, y = flipper_length_mm, color = species)) +
+  geom_point(size = 5, alpha = 1) +  # Big, opaque points
+  theme_minimal() +
+  labs(
+    x = "Body Mass (g)",
+    y = "Flipper Length (mm)"
+  ) +
+  theme(
+    legend.position = "none"  # No legend
+  )
+penguins_bodymass_flippers
+```
+
+### b) How do the design choices mislead the reader about the underlying data? (100-300 words)
+
+A scatter plot can be a useful exploratory figure to convey the relationship between body mass and flipper length in the palmerpenguins dataset. However, there are some design choices that make this particular scatter plot misleading and prevent it from conveying important information contained in the dataset.
+
+1.  The high geom_point size obscures patterns in the data by making points severely overlap.
+
+2.  The alpha value of 1 makes the points completely opaque, once again obscuring patterns in the data by making overlapping points hard to discern.
+
+3.  The random colors chosen for the species and a lack of a legend prevents the reader from knowing which penguin species is represented by which colors. This hinders the figure from communicating important information about species-specific trends in the relationship between body mass and flipper length.
+
+With a smaller geom_point size, a smaller alpha value, and a proper legend with appropriate species-specific colors, this scatter plot would be very effective in conveying how flipper length changes with increasing body mass for the three penguin species Adelie (Pygoscelis adeliae), Chinstrap (Pygoscelis antarcticus), and Gentoo (Pygoscelis papua).
+
+------------------------------------------------------------------------
+
+## QUESTION 2: Data Pipeline
+
+```{r, echo=FALSE}
+# Loading libraries
+library(tidyverse)
+library(palmerpenguins)
+library(here)
+library(janitor)
+library(ggplot2)
+library(ragg)
+library(svglite)
+```
+
+### Introduction
+
+Species occupy distinct ecological niches in a community which promote coexistence. One of the key contributors to niche differences between sympatric species are diet and foraging habits, adaptations for which are often reflected in the beak morphology in birds.
+
+This analysis utilizes data collected from three largely sympatric penguin species - Adelie (Pygoscelis adeliae), Chinstrap (Pygoscelis antarcticus), and Gentoo (Pygoscelis papua) -to investigate whether there is a significant difference in beak length between them. Differences in beak length can be linked to wider differences in the beak morphology and are likely to reflect differences in feeding ecology between species. Insights from this analysis can contribute towards an increased understanding of these species' ecologies, which is important when making predictions about their future habitat and survival.
+
+The data for this analysis is contained in the palmerpenguins dataset. The dataset was first loaded into RStudio, then cleaned to ensure consistency in the names of rows and columns, shorten species names, and remove empty rows and columns.
+
+```{r}
+# Loading the data
+library(palmerpenguins)
+head(penguins_raw)
+colnames(penguins_raw)
+write.csv(penguins_raw, here("data", "penguins_raw.csv"))
+
+# Cleaning the data
+penguins_clean <- penguins_raw %>%
+select(-Comments) %>%
+select(-starts_with("Delta")) %>%
+clean_names() %>%
+mutate(species = gsub(" .*", "", species))  # Shorten species names
+
+colnames(penguins_clean)
+```
+
+Following cleaning, the data was subsetted to only include culmen length, culmen depth (analagous to bill length and depth), and species information to explore bill dimensions in Adelie, Chinstrap, and Gentoo penguins.
+
+```{r}
+# Subsetting the columns culmen length, culmen depth, species and removing NAs
+penguins_data_for_scatterplot <- penguins_clean %>%
+  select(culmen_length_mm, culmen_depth_mm, species) %>%
+  na.omit(culmen_length_mm, culmen_depth_mm)
+```
+
+### Hypothesis
+
+There is a statistically significant difference in the mean beak lengths of Adelie, Chinstrap, and Gentoo penguins.
+
+### Statistical Methods
+
+This analysis used ANOVA to test for differences between the means of the three groups (species) and performed a post-hoc Tukey HSD test to investigate pairwise differences in mean beak lengths.
+
+```{r}
+# One-way ANOVA
+anova_result <- aov(culmen_length_mm ~ species, data = penguins_data_for_scatterplot)
+
+# Post-hoc Tukey HSD test for pairwise comparisons
+tukey_result <- TukeyHSD(anova_result)
+```
+
+### Results & Discussion
+
+A scatter plot of the raw data was created to explore bill dimensions in the three penguin species.
+
+```{r}
+# Define color mapping with names for each species
+species_colours <- c(
+  "Adelie" = "darkorange", 
+  "Chinstrap" = "purple", 
+  "Gentoo" = "cyan4")
+
+# Scatter plot of bill dimensions by species with custom colors
+bill_scatterplot <- ggplot(penguins_data_for_scatterplot, aes(x = culmen_length_mm, y = culmen_depth_mm, color = species)) +
+  geom_point(alpha = 0.7, size = 3) +
+  scale_color_manual(values = species_colours) +
+  labs(
+    title = "Bill Dimensions by Penguin Species",
+    x = "Bill Length (mm)",
+    y = "Bill Depth (mm)",
+    color = "Species"
+  ) +
+  theme_minimal()
+
+# Display the plot
+print(bill_scatterplot)
+```
+
+The scatter plot shows how beak depth changes in relation to beak length, and visual inspection of it reveals that the three species occupy distinct areas of the plot, hinting at differences in beak morphology between them. While Adelie penguins' beaks are shorter but deeper, those of Gentoo penguins seem longer yet less deep. Chinstraps occupy an area between these two species on the curve, with intermediate beak length and depth.
+
+The figure was appropriately scaled and saved.
+
+```{r}
+# Saving as .png
+agg_png("figures/bill_scatterplot.png", 
+        width = 40, height = 40, units = "cm", res = 300, scaling = 2)
+print(bill_scatterplot)
+dev.off()
+
+# Saving as .svg
+inches_conversion = 2.54
+svglite("figures/bill_scatterplot.svg", 
+        width = 40 / inches_conversion, 
+        height = 40 / inches_conversion, 
+        scaling = 2)
+print(bill_scatterplot)
+dev.off()
+```
+
+Next, an ANOVA was conducted to test for differences in mean beak depths between the three penguin species, after which the Tukey HSD test was performed to investigate pairwise comparisons.
+
+```{r}
+summary(anova_result)
+print(tukey_result)
+```
+
+The ANOVA results indicate that there is a statistically significant difference in bill length across the three penguin species. This is due to the highly significant p-value at the 0.001 level. This result is consistent with the hypothesis that penguin species have differing bill lengths, likely due to species-specific ecological adaptations.
+
+All p-values from the Tukey test are \<0.05, indicating the significant difference in bill length in all pairwise species comparisons. Additionally, the 95% confidence intervals for the differences do not include 0 for any pair. Taken together, the results of the ANOVA and Tukey test suggest a statistically significant difference in the bill lengths between all three penguin species in the analysis, supporting the hypothesis. The differences in bill length likely reflect ecological adaptations of the penguin species to their respective diet and foraging strategies.
+
+Following this, an interval plot was produced which visualizes the differences in mean beak length for all pairwise comparisons, including their relative statistical significance taken from the Tukey test.
+
+Before producing the plot, results of the Tukey HSD test were extracted into a data frame, to which a species comparison column and indication of significance levels were added.
+
+```{r}
+# Extracting the Tukey HSD results into a dataframe:
+tukey_df <- as.data.frame(tukey_result$species)
+
+# Adding a column for the species comparisons
+tukey_df$Comparison <- rownames(tukey_df)
+
+# Creating the pairwise_diff data frame with significance levels indicated
+pairwise_diff <- tukey_df %>%
+  select(Comparison, diff, lwr, upr, `p adj`) %>%
+  rename(
+    Difference = diff,
+    Lower = lwr,
+    Upper = upr,
+    p_value = `p adj`
+  )  %>%
+  mutate(
+    significance = case_when(
+      p_value < 0.001 ~ "***",
+      p_value < 0.01 ~ "**",
+      p_value < 0.05 ~ "*",
+      TRUE ~ "ns"  # Not significant
+    ) )
+
+# Print the resulting pairwise_diff data frame
+print(pairwise_diff)
+```
+
+```{r}
+# Interval plot with significance annotations
+interval_plot <- ggplot(pairwise_diff, aes(x = Comparison, y = Difference)) +
+  geom_point(size = 4, color = "maroon2") +  # Mean differences as points
+  geom_errorbar(aes(ymin = Lower, ymax = Upper), width = 0.2, color = "black") + # Vertical error bars
+  geom_hline(yintercept = 0, linetype = "dashed", color = "navyblue", size = 0.8) +  # Zero difference reference line
+  geom_text(
+    aes(label = significance, y = Upper + 0.5),  # Positioning significance levels above the error bars
+    size = 5,
+    color = "black"
+  ) +
+  labs(title = "Pairwise Differences in Bill Length Between Penguin Species",
+    x = "Species Comparison",
+    y = "Difference in Mean Bill Length (mm)") +
+  theme_bw()
+
+# Display the plot
+print(interval_plot)
+```
+
+The interval plot highlights the statistical significance of all pairwise comparisons and shows that the 95% confidence interval does not overlap 0 for any pair. From this figure, it can be concluded that the average beak length is highest for Chinstrap penguins followed by Gentoo. Adelie penguins have the shortest beaks between the three species.
+
+The significant differences in the mean bill lengths of the three penguin species likely reflect ecological adaptations to different feeding niches. Adelie penguins feed largely on fish and krill, and usually catch their prey near the surface of the water. Like Adelie penguins, Chinstrap penguins also have a diet consisting of fish and krill (Trivelpiece et al., 1987). Both of these species feed offshore and are shallow divers, although Chinstraps tend to dive deeper than Adelie penguins. Gentoos have a more diverse generalist diet consisting of squid, fish, and crustaceans. They feed inshore and dive to depths of up to 200 m to catch their prey. Their ability to dive deeper enables them access to a feeding niche which is unavailable to the other two species (Trivelpiece et al., 1987). Although these differences in diet composition and foraging behaviour may seem minor, they can be enough to result in distinct niches for these species to ensure their coexistence. It is important to note that size differences exist between these species, however the size order is not mirrored in the order of beak length. Gentoos are the largest of these three species yet come second in average beak length. This finding strengthens the idea that differences in bill length in these species are partly a result of differences in feeding ecology, although more detailed geometric morphometric analyses paired with behavioural observations are needed for further support.
+
+### Conclusion
+
+This analysis aimed to test whether there is a statistically significant difference in bill length between Adelie, Chinstrap, and Gentoo penguins. The bill morphology of penguins is shaped by adaptations to their feeding ecology since bills are used in the acquisition and consumption of food items. The finding that the mean beak lengths differ significantly between these three penguin species hints at potential differences regarding their feeding niches. Additional factors to be considered in further analyses include beak length relative to body size, as well as other parameters characterizing beak morphology.
+
+### References
+
+A., L. et al. (2002) ‘Conflict or co-existence? foraging distribution and competition for prey between Adélie and chinstrap penguins.’, Marine Biology, 141(6), pp. 1165–1174. <doi:10.1007/s00227-002-0899-1>. 
+
+Birds & Seals of the Falkland Islands- Falklands birds & seals - Falkland Islands wildlife guide. Available at: <http://www.seabirds.org/birds.htm> (Accessed: 11 December 2024). 
+
+Oceanwide Expeditions. Available at: <https://oceanwide-expeditions.com/blog/meet-all-6-antarctic-penguin-species> (Accessed: 11 December 2024). 
+
+Gentoo Penguins \~ Marinebio Conservation Society (2023) MarineBio Conservation Society. Available at: <https://www.marinebio.org/species/gentoo-penguins/pygoscelis-papua/> (Accessed: 11 December 2024). 
+
+Trivelpiece, W.Z., Trivelpiece, S.G. and Volkman, N.J. (1987) ‘Ecological segregation of Adelie, Gentoo, and chinstrap penguins at king george island, Antarctica’, Ecology, 68(2), pp. 351–361. <doi:10.2307/1939266>. 
+
+------------------------------------------------------------------------
+
+## Question 3: Open Science
+
+### a) GitHub
+
+*Upload your RProject you created for **Question 2** and any files and subfolders used to GitHub. Do not include any identifiers such as your name. Make sure your GitHub repo is public.*
+
+*GitHub link:*
+
+*You will be marked on your repo organisation and readability.*
+
+### b) Share your repo with a partner, download, and try to run their data pipeline.
+
+*Partner's GitHub link:*
+
+*You **must** provide this so I can verify there is no plagiarism between you and your partner.*
+
+### c) Reflect on your experience running their code. (300-500 words)
+
+-   *What elements of your partner's code helped you to understand and run their data pipeline?*
+
+-   *Did it run? Did you need to fix anything?*
+
+-   *What suggestions would you make for improving their code to make it more understandable or reproducible, and why?*
+
+-   *If you needed to alter your partner's figure using their code, do you think that would be easy or difficult, and why?*
+
+### d) Reflect on your own code based on your experience with your partner's code and their review of yours. (300-500 words)
+
+-   *What improvements did they suggest, and do you agree?*
+
+-   *What did you learn about writing code for other people?*
+
+### e) What are the main barriers for scientists to share their data and code, and what could be done to overcome them? (500-700 words)
+
+-   Maitner et al. Code sharing increases citations, but remains uncommon. <https://doi.org/10.21203/rs.3.rs-3222221/v1>
+-   Trisovic et al. A large-scale study on research code quality and execution. <https://rdcu.be/dZB7x>
+-   A Rock-Star Researcher Spun a Web of Lies—and Nearly Got Away with It. <https://thewalrus.ca/a-rock-star-researcher-spun-a-web-of-lies-and-nearly-got-away-with-it/>
+-   Gomes et al. Why don't we share data and code? Perceived barriers and benefits to public archiving practices <https://doi.org/10.1098/rspb.2022.1113>
+
+\
+cd /path/to/Reproducable Science Assignment
