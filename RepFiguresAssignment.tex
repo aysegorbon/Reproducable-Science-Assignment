@@ -119,29 +119,27 @@ Assignment}\label{reproducible-research-and-figures-assignment}
 
 Loading libraries
 
-\begin{verbatim}
-## -- Attaching core tidyverse packages ------------------------ tidyverse 2.0.0 --
-## v dplyr     1.1.4     v readr     2.1.5
-## v forcats   1.0.0     v stringr   1.5.1
-## v ggplot2   3.5.1     v tibble    3.2.1
-## v lubridate 1.9.3     v tidyr     1.3.1
-## v purrr     1.0.2     
-## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
-## x dplyr::filter() masks stats::filter()
-## x dplyr::lag()    masks stats::lag()
-## i Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
-## here() starts at /Users/ayse/Documents/Lydia France Assignment
-## 
-## 
-## Attaching package: 'janitor'
-## 
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     chisq.test, fisher.test
-\end{verbatim}
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(palmerpenguins)}
+\FunctionTok{library}\NormalTok{(here)}
+\FunctionTok{library}\NormalTok{(janitor)}
+\FunctionTok{library}\NormalTok{(ggplot2)}
+\FunctionTok{library}\NormalTok{(ragg)}
+\FunctionTok{library}\NormalTok{(svglite)}
+\FunctionTok{library}\NormalTok{(tinytex)}
+\FunctionTok{library}\NormalTok{(yaml)}
+\end{Highlighting}
+\end{Shaded}
 
 Loading the data:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{head}\NormalTok{(penguins\_raw)}
+\end{Highlighting}
+\end{Shaded}
 
 \begin{verbatim}
 ## # A tibble: 6 x 17
@@ -159,6 +157,12 @@ Loading the data:
 ## #   `Delta 15 N (o/oo)` <dbl>, `Delta 13 C (o/oo)` <dbl>, Comments <chr>
 \end{verbatim}
 
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{colnames}\NormalTok{(penguins\_raw)}
+\end{Highlighting}
+\end{Shaded}
+
 \begin{verbatim}
 ##  [1] "studyName"           "Sample Number"       "Species"            
 ##  [4] "Region"              "Island"              "Stage"              
@@ -168,7 +172,25 @@ Loading the data:
 ## [16] "Delta 13 C (o/oo)"   "Comments"
 \end{verbatim}
 
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{write.csv}\NormalTok{(penguins\_raw, }\FunctionTok{here}\NormalTok{(}\StringTok{"data"}\NormalTok{, }\StringTok{"penguins\_raw.csv"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
 Cleaning the data:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{penguins\_clean }\OtherTok{\textless{}{-}}\NormalTok{ penguins\_raw }\SpecialCharTok{\%\textgreater{}\%}
+\FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{Comments) }\SpecialCharTok{\%\textgreater{}\%}
+\FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\FunctionTok{starts\_with}\NormalTok{(}\StringTok{"Delta"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
+\FunctionTok{clean\_names}\NormalTok{() }\SpecialCharTok{\%\textgreater{}\%}
+\FunctionTok{mutate}\NormalTok{(}\AttributeTok{species =} \FunctionTok{gsub}\NormalTok{(}\StringTok{" .*"}\NormalTok{, }\StringTok{""}\NormalTok{, species))  }\CommentTok{\# Shorten species names}
+
+\FunctionTok{colnames}\NormalTok{(penguins\_clean)}
+\end{Highlighting}
+\end{Shaded}
 
 \begin{verbatim}
 ##  [1] "study_name"        "sample_number"     "species"          
@@ -179,6 +201,12 @@ Cleaning the data:
 \end{verbatim}
 
 Saving the clean data:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{write\_csv}\NormalTok{(penguins\_clean, }\FunctionTok{here}\NormalTok{(}\StringTok{"data"}\NormalTok{, }\StringTok{"penguins\_clean.csv"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
 
 \subsection{QUESTION 01: Data Visualisation for Science
 Communication}\label{question-01-data-visualisation-for-science-communication}
@@ -225,6 +253,21 @@ papua).
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \subsection{QUESTION 2: Data Pipeline}\label{question-2-data-pipeline}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Loading libraries}
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(palmerpenguins)}
+\FunctionTok{library}\NormalTok{(here)}
+\FunctionTok{library}\NormalTok{(janitor)}
+\FunctionTok{library}\NormalTok{(ggplot2)}
+\FunctionTok{library}\NormalTok{(ragg)}
+\FunctionTok{library}\NormalTok{(svglite)}
+\FunctionTok{library}\NormalTok{(tinytex)}
+\FunctionTok{library}\NormalTok{(yaml)}
+\end{Highlighting}
+\end{Shaded}
 
 \subsubsection{Introduction}\label{introduction}
 
@@ -528,7 +571,7 @@ of significance levels were added.
 \NormalTok{interval\_plot }\OtherTok{\textless{}{-}} \FunctionTok{ggplot}\NormalTok{(pairwise\_diff, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ Comparison, }\AttributeTok{y =}\NormalTok{ Difference)) }\SpecialCharTok{+}
   \FunctionTok{geom\_point}\NormalTok{(}\AttributeTok{size =} \DecValTok{4}\NormalTok{, }\AttributeTok{color =} \StringTok{"maroon2"}\NormalTok{) }\SpecialCharTok{+}  \CommentTok{\# Mean differences as points}
   \FunctionTok{geom\_errorbar}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{ymin =}\NormalTok{ Lower, }\AttributeTok{ymax =}\NormalTok{ Upper), }\AttributeTok{width =} \FloatTok{0.2}\NormalTok{, }\AttributeTok{color =} \StringTok{"black"}\NormalTok{) }\SpecialCharTok{+} \CommentTok{\# Vertical error bars}
-  \FunctionTok{geom\_hline}\NormalTok{(}\AttributeTok{yintercept =} \DecValTok{0}\NormalTok{, }\AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{, }\AttributeTok{color =} \StringTok{"navyblue"}\NormalTok{, }\AttributeTok{size =} \FloatTok{0.8}\NormalTok{) }\SpecialCharTok{+}  \CommentTok{\# Zero difference reference line}
+  \FunctionTok{geom\_hline}\NormalTok{(}\AttributeTok{yintercept =} \DecValTok{0}\NormalTok{, }\AttributeTok{linetype =} \StringTok{"dashed"}\NormalTok{, }\AttributeTok{color =} \StringTok{"navyblue"}\NormalTok{, }\AttributeTok{linewidth =} \FloatTok{0.8}\NormalTok{) }\SpecialCharTok{+}  \CommentTok{\# Zero difference reference line}
   \FunctionTok{geom\_text}\NormalTok{(}
     \FunctionTok{aes}\NormalTok{(}\AttributeTok{label =}\NormalTok{ significance, }\AttributeTok{y =}\NormalTok{ Upper }\SpecialCharTok{+} \FloatTok{0.5}\NormalTok{),  }\CommentTok{\# Positioning significance levels above the error bars}
     \AttributeTok{size =} \DecValTok{5}\NormalTok{,}
@@ -538,19 +581,7 @@ of significance levels were added.
     \AttributeTok{x =} \StringTok{"Species Comparison"}\NormalTok{,}
     \AttributeTok{y =} \StringTok{"Difference in Mean Bill Length (mm)"}\NormalTok{) }\SpecialCharTok{+}
   \FunctionTok{theme\_bw}\NormalTok{()}
-\end{Highlighting}
-\end{Shaded}
 
-\begin{verbatim}
-## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
-## i Please use `linewidth` instead.
-## This warning is displayed once every 8 hours.
-## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
-## generated.
-\end{verbatim}
-
-\begin{Shaded}
-\begin{Highlighting}[]
 \CommentTok{\# Display the plot}
 \FunctionTok{print}\NormalTok{(interval\_plot)}
 \end{Highlighting}
@@ -602,27 +633,31 @@ size, as well as other parameters characterizing beak morphology.
 
 \subsubsection{References}\label{references}
 
-A., L.~et al.~(2002) `Conflict or co-existence? foraging distribution
-and competition for prey between Adélie and chinstrap penguins.',~Marine
-Biology, 141(6), pp.~1165--1174. \url{doi:10.1007/s00227-002-0899-1}.~
-
-Birds \& Seals of the Falkland Islands- Falklands birds \& seals -
-Falkland Islands wildlife guide. Available at:
-\url{http://www.seabirds.org/birds.htm} (Accessed: 11 December 2024).~
-
-Oceanwide Expeditions. Available at:
-\url{https://oceanwide-expeditions.com/blog/meet-all-6-antarctic-penguin-species}
-(Accessed: 11 December 2024).~
-
-Gentoo Penguins \textasciitilde{} Marinebio Conservation
-Society~(2023)~MarineBio Conservation Society. Available at:
-\url{https://www.marinebio.org/species/gentoo-penguins/pygoscelis-papua/}
-(Accessed: 11 December 2024).~
-
-Trivelpiece, W.Z., Trivelpiece, S.G. and Volkman, N.J. (1987)
-`Ecological segregation of Adelie, Gentoo, and chinstrap penguins at
-king george island, Antarctica',~Ecology, 68(2), pp.~351--361.
-\url{doi:10.2307/1939266}.~
+\begin{itemize}
+\item
+  A., L.~et al.~(2002) `Conflict or co-existence? foraging distribution
+  and competition for prey between Adélie and chinstrap
+  penguins.',~Marine Biology, 141(6), pp.~1165--1174.
+  \url{doi:10.1007/s00227-002-0899-1}.~
+\item
+  Birds \& Seals of the Falkland Islands- Falklands birds \& seals -
+  Falkland Islands wildlife guide. Available at:
+  \url{http://www.seabirds.org/birds.htm} (Accessed: 11 December 2024).~
+\item
+  Oceanwide Expeditions. Available at:
+  \url{https://oceanwide-expeditions.com/blog/meet-all-6-antarctic-penguin-species}
+  (Accessed: 11 December 2024).~
+\item
+  Gentoo Penguins \textasciitilde{} Marinebio Conservation
+  Society~(2023)~MarineBio Conservation Society. Available at:
+  \url{https://www.marinebio.org/species/gentoo-penguins/pygoscelis-papua/}
+  (Accessed: 11 December 2024).~
+\item
+  Trivelpiece, W.Z., Trivelpiece, S.G. and Volkman, N.J. (1987)
+  `Ecological segregation of Adelie, Gentoo, and chinstrap penguins at
+  king george island, Antarctica',~Ecology, 68(2), pp.~351--361.
+  \url{doi:10.2307/1939266}.~
+\end{itemize}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -636,7 +671,7 @@ as your name. Make sure your GitHub repo is public.}
 
 \emph{GitHub link:}
 
-\emph{You will be marked on your repo organisation and readability.}
+\url{https://github.com/biouser2/Reproducable-Science-Assignment}
 
 \subsubsection{b) Share your repo with a partner, download, and try to
 run their data
@@ -644,58 +679,191 @@ pipeline.}\label{b-share-your-repo-with-a-partner-download-and-try-to-run-their-
 
 \emph{Partner's GitHub link:}
 
-\emph{You \textbf{must} provide this so I can verify there is no
-plagiarism between you and your partner.}
+\url{https://github.com/Biology11/Reproducible-Science-and-Figures}
 
 \subsubsection{c) Reflect on your experience running their code.
 (300-500
 words)}\label{c-reflect-on-your-experience-running-their-code.-300-500-words}
 
-\begin{itemize}
-\item
-  \emph{What elements of your partner's code helped you to understand
-  and run their data pipeline?}
-\item
-  \emph{Did it run? Did you need to fix anything?}
-\item
-  \emph{What suggestions would you make for improving their code to make
-  it more understandable or reproducible, and why?}
-\item
-  \emph{If you needed to alter your partner's figure using their code,
-  do you think that would be easy or difficult, and why?}
-\end{itemize}
+Running my partner's code was mostly a straightforward process. The
+analysis is structured clearly and well. The use of headings and
+comments made it easy to understand the function of each code chunk,
+even if the specifics of the code were not familiar to me. The necessary
+libraries were loaded and my partner's code ran without needing to fix
+anything. The use of intuitive and descriptive variable names, such as
+``penguins\_clean'' and ``adelie\_penguins'', made the code easy to read
+for a human and not just for a computer. It would have been good to save
+datasets such as ``penguins\_clean'' as .csv files for easy access in
+the future. The use of piping to clean the data contributed to the
+reproducibility of the code as well as making it easy to alter the code
+for different analysis needs in the future. The line of code where the
+column name ``Sex'' is modified to not be capitalized could have been
+included in the data cleaning pipe as well; this would overcome the
+confusion created by having variables called ``adelie\_penguins'' as
+well as adelie\_penguins\$sex.~ Additionally, creating a function in R
+would have made these steps even more reproducible. If my partner were
+to create a ``cleaning function'' for example, it could be possible to
+use the same code for a different dataset, making their analysis
+replicable.~
+
+The figures produced in the analysis are very clear in communicating the
+relevant information from the dataset. The transparency of the bins of
+the histogram are useful in showing the distribution for males and
+females in the area of overlap. For some of the less intuitive elements
+of the code, including a comment next to certain functions could improve
+clarity for users. For example, it could be useful to add a comment
+after the annotate(``text'',\ldots) line when plotting the histogram to
+explain what this line of code does. Additionally, writing code to
+display the mean of each distribution on the figure as a dot, perhaps
+indicating the level of significance between the means with asterisks on
+the figure as well, would make the plot more efficient in conveying the
+relevant information. However even in this step, the code my partner
+wrote is reproducible since it does not directly include a number for
+the mean flipper length in the code and instead uses columns in the two
+sample t-test results table. One way of making the figures easier to
+manipulate for other users is by defining a color vector for both sexes
+beforehand and including the color vector in the code instead of
+manually assigning colors. Despite minor suggestions, the code and
+analysis runs without problem and is effective in communicating
+important information, as well as being largely reproducible.
 
 \subsubsection{d) Reflect on your own code based on your experience with
 your partner's code and their review of yours. (300-500
 words)}\label{d-reflect-on-your-own-code-based-on-your-experience-with-your-partners-code-and-their-review-of-yours.-300-500-words}
 
-\begin{itemize}
-\item
-  \emph{What improvements did they suggest, and do you agree?}
-\item
-  \emph{What did you learn about writing code for other people?}
-\end{itemize}
+The exercise of trying to run my partner's code and get their feedback
+on running mine was a very informative process from which I have gained
+valuable insights into writing reproducible code. An improvement my
+partner suggested to me was creating a function for the data cleaning
+and subsetting stages, which would improve the reproducibility of my
+code and could make it be used on different datasets seamlessly. This
+was very noteworthy to me as my main suggestion to my partner's code was
+also the same: creating functions for steps such as data cleaning. It
+has now become clear to me that while one may think their line of code
+is well annotated and thus reproducible, creating functions where they
+are useful enables research to go an extra step farther in terms of
+reproducibility. Based on personal experience, as well as the literature
+on the barriers to reproducibility in science, I believe what prevents
+many people from writing their own functions in R is a lack of
+experience with such practices. However, considering all of the
+information available online which can aid one in writing their own
+functions, as well as their utility in making research more
+reproducible, I can say that this is something I will look to implement
+in my future coding projects.~
+
+Another comment I received was that my partner had difficulty running my
+code to save figures, and that this part of my code should be more
+thoroughly annotated. I agree with this suggestion and would ensure
+annotations are present in all less intuitive elements of my code for
+the future. Based on my experience with my partner's code, I can see
+that using annotations where necessary can be very useful in making code
+accessible and understandable even to people who are not familiar with
+the methods used in the analysis. Some positive feedbacks I got included
+the use of species-specific color vectors for figures. This was an area
+in which I suggested improvements to my partner's code as it ensures
+consistency amongst the figures as well as aiding in reproducibility.
+Overall, this exercise has demonstrated the importance of using best
+practices when coding to ensure reproducibility, and elements which are
+important for this include writing functions where appropriate,
+annotating the code for elements which are less intuitive, writing
+intuitive code to save datasets and plots, as well as defining color
+vectors to be used in figures.~
 
 \subsubsection{e) What are the main barriers for scientists to share
 their data and code, and what could be done to overcome them? (500-700
 words)}\label{e-what-are-the-main-barriers-for-scientists-to-share-their-data-and-code-and-what-could-be-done-to-overcome-them-500-700-words}
 
+\hfill\break
+Despite the demonstrated benefits of data and code sharing, as well as
+the importance of this practice for the advancement of science, its
+wider adoption is hindered by certain barriers. For instance,
+researchers may fear being ``scooped'', where another researcher
+completes an analysis the author had intended to do themselves (Gomes et
+al., 2022). The time required to clean one's code to ensure it is
+reproducible and understandable to others presents another barrier to
+the dissemination of code. Scientists may fear that if they make their
+data and code public, others may find errors in them which may hinder
+their career progress. Additionally, many researchers might simply not
+know best practices to ensure the reproducibility of their analyses, as
+well as how to make their data and code public (Gomes et al., 2022).
+
+It is important to acknowledge that data and code sharing are not only
+beneficial for the advancement of science by reducing the time
+researchers spend rewriting code which could otherwise be obtained
+through sharing, but also for the individual scientist themselves. In
+fact, various studies have demonstrated the increased citation rate of
+papers as a result of sharing their data and code (McKiernan et al.,
+2016). It is important for researchers to consider that their rights to
+ownership of data or code can be protected by appropriate licensing, and
+that the opportunity to publish pre-prints allows them to disseminate
+their ideas rapidly and claim the projects they want to conduct (Gomes
+et al., 2022). To overcome fears of inadequate code, it is essential
+that researchers familiarize themselves with best practices in coding,
+which will not only allow them to engage in reproducible science, but
+also make it easier for themselves to rerun analyses in the future or do
+further work on a given project. One study aimed to establish the
+reproducibility of research uploaded onto the Harvard Database
+repository, and found that they were able to reduce the percentage of R
+files that produced an error when running from 74\% to 56\% by
+implementing a simple code cleaning procedure (Trisovic et al., 2022).
+Their analysis showed that the reproducibility of research may be
+increased through the use of literate programming, for example by adding
+comments to explain code chunks (Trisovic et al., 2022). It was noted,
+however, that best practices in this regard suggest minimizing the
+number of comments to those necessary, and implementing intuitive names
+for functions and variables remains essential for reproducibility. The
+use of formats such as RMarkdown allow ease of use of the code, which
+also improves reproducibility. The authors frequently observed errors
+due to the incompatibility of newer versions of R libraries with the
+initial analysis, and strongly recommend an increased adoption of the
+renv package in R which documents the libraries and versions used in an
+analysis (Trisovic et al., 2022). Although researchers might not be used
+to this practice, its wider adoption holds the potential to
+significantly improve the reproducibility of analyses.~
+
+Lastly, responsibility falls on journals and funding bodies to
+incentivize data and code sharing. Although some funding institutions,
+like the NIH in the United States, have been mandating data sharing for
+decades, there is still the need for more organizations to adopt such
+policies (Gomes et al., 2022). Although some journals mandate or
+strongly encourage~ the sharing of data and code, there is scope for
+significant improvement in this area, especially regarding the
+effectiveness of the implementation of these policies. Journals should
+provide links to the repository where the data and code in an analysis
+is stored, and could even employ code editors as part of the peer review
+process~ (Maitner et al., 2023). As for individuals, the sharing of data
+and code as well as adoption of open science in general, is expected to
+provide benefits to journals owing to an increase in citation rates and
+impact.
+
+\subsubsection{References}\label{references-1}
+
 \begin{itemize}
 \tightlist
 \item
-  Maitner et al.~Code sharing increases citations, but remains uncommon.
-  \url{https://doi.org/10.21203/rs.3.rs-3222221/v1}
+  Maitner, B.~\emph{et al.}~(2023)~\emph{Code sharing increases
+  citations, but remains uncommon}~{[}Preprint{]}.
+  \url{doi:10.21203/rs.3.rs-3222221/v1}.~
 \item
-  Trisovic et al.~A large-scale study on research code quality and
-  execution. \url{https://rdcu.be/dZB7x}
+  Trisovic, A.~\emph{et al.}~(2022) `A large-scale study on research
+  code quality and execution',~\emph{Scientific Data}, 9(1).
+  \url{doi:10.1038/s41597-022-01143-6}.~
 \item
   A Rock-Star Researcher Spun a Web of Lies---and Nearly Got Away with
   It.
   \url{https://thewalrus.ca/a-rock-star-researcher-spun-a-web-of-lies-and-nearly-got-away-with-it/}
 \item
-  Gomes et al.~Why don't we share data and code? Perceived barriers and
-  benefits to public archiving practices
-  \url{https://doi.org/10.1098/rspb.2022.1113}
+  Gomes, D.G.~\emph{et al.}~(2022) `Why don't we share data and code?
+  perceived barriers and benefits to public archiving
+  practices',~\emph{Proceedings of the Royal Society B: Biological
+  Sciences}, 289(1987). \url{doi:10.1098/rspb.2022.1113}.~
+\item
+  McKiernan, E.C.~\emph{et al.}~(2016a) `How open science helps
+  researchers succeed',~\emph{eLife}, 5. \url{doi:10.7554/elife.16800}.~
+\item
+  Baker, M. (2016) `1,500 scientists lift the lid on
+  reproducibility',~\emph{Nature}, 533(7604), pp.~452--454.
+  \url{doi:10.1038/533452a}.~
 \end{itemize}
 
 \end{document}
