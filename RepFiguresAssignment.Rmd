@@ -6,11 +6,6 @@ date: "2024-12-11"
 
 ## Preparatory Steps
 
-```{r setup,include=FALSE}
-# Activate the renv environment
-source("renv/activate.R")
-```
-
 Loading libraries
 
 ```{r, message=FALSE}
